@@ -23,11 +23,15 @@
 }
 
 #deploy-column {
-	min-width:185px;
+	min-width: 185px;
 }
 
 ul { list-style-type: none; margin: 0; padding: 0; margin-bottom: 0px; }
 li { margin: 0px; padding: 0px; width: 180px; }
+
+.connectedSortable{
+	min-width: 185px;
+}
 
 .die {
 	width: 25px;
@@ -220,7 +224,7 @@ var UserStory = function(data) {
 		var toDoWork = eval("that." + stageName + "Work");
 		
 		for(var i = 0; i < toDoWork; i++) {
-			text += "<input type='radio' disabled${value}/>".format({'value':(doneWork > 0 ? " checked='true'" : "")});
+			text += "<input type='radio' ${value}/>".format({'value':(doneWork > 0 ? " checked='true'" : "")});
 			doneWork--;
 		}
 		
@@ -240,7 +244,7 @@ var UserStory = function(data) {
 	}
 	
 	var writeElement = function() {
-		return isNew() ? "<li id='${name}'>" + STORY_TEMPLATE + "</li>" : STORY_TEMPLATE;
+		return isNew() ? "<li id='${name} class=''ui-state-default'''>" + STORY_TEMPLATE + "</li>" : STORY_TEMPLATE;
 	}
 	
 	this.draw = function() {
@@ -256,7 +260,7 @@ var UserStory = function(data) {
 		html = html.format({'classOfService':this.classOfService, 'revenue':revenue, 'name': this.name, 'designWork': designWork, 'developmentWork': developmentWork, 'testWork': testWork, 'subtitle': this.subtitle});
 		
 		var _stage = this.stage == 'queue' ? this.classOfService + "-queue" : this.stage;
-		
+
 		isNew() ? $("#${stage}-column".format(_stage)).append(html) : storyDomElement.html(html);
 	}
 }
@@ -336,7 +340,7 @@ var Game = function(state) {
 		
 		var designerAssignment = getValue("designer-choice");
 		var developerAssignment = getValue("developer-choice");
-		var testAssignment = getValue("test-choice");
+		var testAssignment = getValue("tester-choice");
 
 		if(this.policy.developers >= this.round) {
 			this.devDie.redraw();
@@ -449,6 +453,8 @@ var state = {
 }
 
 var game = null;
+
+
 $(function() {
 	var stages = ["ready","development-doing",'development-done','design-doing','design-done','test']
 	for(var i=0; i< stages.length;i++) {
@@ -460,6 +466,14 @@ $(function() {
 	game = new Game(state);
 	game.draw();
 });
+  $(function() {
+    $( "#ready-column, #deploy-column, #design-doing-column, #design-done-column, #development-doing-column, #development-done-column, #test-column" ).sortable({
+      connectWith: ".connectedSortable"
+    }).disableSelection();
+  });
+
+
+
 </script>
 </head>
 <body>
@@ -503,9 +517,9 @@ $(function() {
 <table id="board" border="0" cellpadding="4" cellspacing="0">
 	<tr id="board-head">
 		<td rowspan="2">Ready (<span id="ready-limit"></span>)</td>
-		<td colspan="2" class="dropable" title="Design">Design (<span id="design-limit"></span>)</td>
-		<td colspan="2" class="dropable"title="Development">Development (<span id="development-limit"></span>)</td>
-		<td class="dropable" title="Test">Test (<span id="test-limit"></span>)</td>
+		<td colspan="2" title="Design">Design (<span id="design-limit"></span>)</td>
+		<td colspan="2" title="Development">Development (<span id="development-limit"></span>)</td>
+		<td title="Test">Test (<span id="test-limit"></span>)</td>
 		<td rowspan="2">Deployed</td>
 	</tr>
 	<tr>
@@ -515,22 +529,22 @@ $(function() {
 		<td>Done</td>
 		<td>Doing</td>
 	</tr>
-	<tr id="expedite-lane">
-		<td id="expedite-ready-column" valign="top">Expedite (+1)</td>
-		<td id="expedite-design-doing-column" valign="top">&nbsp;</td>
-		<td id="expedite-design-done-column" valign="top">&nbsp;</td>
-		<td id="expedite-development-doing-column" valign="top">&nbsp;</td>
-		<td id="expedite-development-done-column" valign="top">&nbsp;</td>
-		<td id="expedite-test-column" valign="top">&nbsp;</td>
-		<td id="deploy-column" valign="top" rowspan="2">&nbsp;</td>
+	<tr id="expedite-lane" >
+		<td id="expedite-ready-column"  valign="top">Expedite (+1)</td>
+		<td id="expedite-design-doing-column"  valign="top">&nbsp;</td>
+		<td id="expedite-design-done-column"  valign="top">&nbsp;</td>
+		<td id="expedite-development-doing-column"  valign="top">&nbsp;</td>
+		<td id="expedite-development-done-column"  valign="top">&nbsp;</td>
+		<td id="expedite-test-column"  valign="top">&nbsp;</td>
+		<td id="deploy-column" class="connectedSortable" valign="top" rowspan="2">&nbsp;</td>
 	</tr>
 	<tr id="game">
-		<td valign="top"><ul id="ready-column"></ul></td>
-		<td valign="top"><ul id="design-doing-column"></ul></td>
-		<td valign="top"><ul id="design-done-column"></ul></td>
-		<td valign="top"><ul id="development-doing-column"></ul></td>
-		<td valign="top"><ul id="development-done-column"></ul></td>
-		<td valign="top"><ul id="test-column"></ul></td>
+		<td valign="top"><ul class="connectedSortable" id="ready-column"><li>*</li></ul></td>
+		<td valign="top"><ul class="connectedSortable" id="design-doing-column"><li>*</li></ul></td>
+		<td valign="top"><ul class="connectedSortable" id="design-done-column"><li>*</li></ul></td>
+		<td valign="top"><ul class="connectedSortable" id="development-doing-column"><li>*</li></ul></td>
+		<td valign="top"><ul class="connectedSortable" id="development-done-column"><li>*</li></ul></td>
+		<td valign="top"><ul class="connectedSortable" id="test-column"><li>*</li></ul></td>
 	</tr>
 </table>
 <br/>
