@@ -1,0 +1,4 @@
+node_modules
+npm_modules/
+.idea
+kanban-game.iml
