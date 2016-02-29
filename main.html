@@ -263,6 +263,7 @@ var UserStory = function(data) {
 
 		isNew() ? $("#${stage}-column".format(_stage)).append(html) : storyDomElement.html(html);
 	}
+
 }
 
 var Die = function(colorName) {
@@ -311,6 +312,7 @@ var Policy = function() {
 }
 
 var Game = function(state) {
+	this.baseStory = 15;
 	this.day = 9;
 	this.policy = new Policy();
 	this.stories = {'get':function(name) {
@@ -326,9 +328,6 @@ var Game = function(state) {
 	this.round = 1;
 	
 	this.nextRound = function() {
-		if(this.round > 3) {
-			return;
-		}
 		
 		function getValue(name) {
 			var inputs = $('input[name="${name}"]'.format(name));
@@ -342,49 +341,52 @@ var Game = function(state) {
 		var developerAssignment = getValue("developer-choice");
 		var testAssignment = getValue("tester-choice");
 
-		if(this.policy.developers >= this.round) {
-			this.devDie.redraw();
-			stories = this.stories.get(developerAssignment);
-			var stageProperty = developerAssignment.replace(/-doing/,'')
-			
-			toDoWork = stageProperty + 'Work';
-			doneWork = stageProperty + 'Done';
-			
-			remainingWorkForce = this.devDie.value * (stageProperty == 'development' ? 2 : 1);
-			
-			for(var i=0;i< stories.length; i++) {
-				alert(remainingWorkForce);
-				remainingWorkForce = stories[i].addWorkDoneToStage(stageProperty, remainingWorkForce);
-				stories[i].update();
-				if(remainingWorkForce == 0)
-					break;
-			}
+		this.devDie.redraw();
+		this.testerDie.redraw();
+		this.designerDie.redraw();
+
+		for(var i=0; i < state['stories'].length; i++) {
+			var stageStories = this.stories.get(state.stories[i].stage);
+			stageStories.push(new UserStory(state.stories[i]));
 		}
-		
-		if(this.policy.testers >= this.round)	{
-			this.testerDie.redraw();
-		}
-			
-		if(this.policy.designers >= this.round) {
-			this.designerDie.redraw();
-		}
-			
-		this.round++;
 	}
-	
+
 	for(var i=0; i < state['stories'].length; i++) {
 		var stageStories = this.stories.get(state.stories[i].stage);
-		
+
 		stageStories.push(new UserStory(state.stories[i]));
 	}
-	
+
 	this.advanceDay = function() {
 		this.day++;
 	}
-	
+
 	var initialize = function() {
 	}
-	
+
+	this.newFromQueue = function() {
+		if(state.stories[this.baseStory].stage == 'queue') {
+			this.stories.queue[0].stage = 'ready';
+			var temp = [];
+			temp[0] = this.stories.queue[0];
+			this.stories.queue.splice(0, 1);
+			this.stories.ready.push(temp[0]);
+			for(stage in this.stories) {
+				if(stage != 'ready') continue;
+
+				var _stories = this.stories[stage];
+				for(var i=_stories.length-1; i < _stories.length; i++) {
+					_stories[i].draw();
+				}
+			}
+
+			this.baseStory++;
+		}
+		else {
+			alert ("No more tasks in queue!");
+		}
+	}
+
 	this.draw = function() {
 		initialize();
 		
@@ -491,6 +493,8 @@ $(function() {
 						</td>
 						<td rowspan="3">
 							<input type="button" value="Next Round" onclick="game.nextRound()"/>
+							<input type="button" value="Next Day" onclick="game.advanceDay()"/>
+							<input type="button" value="Next from queue" onclick="game.newFromQueue()"/>
 						</td>
 					</tr>
 					<tr>
