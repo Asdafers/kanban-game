@@ -349,6 +349,23 @@ var Game = function(state) {
 			var stageStories = this.stories.get(state.stories[i].stage);
 			stageStories.push(new UserStory(state.stories[i]));
 		}
+
+		if (game.round<4){
+			$("#roll").attr('value', 'Roll - Round('+game.round+')');
+			game.round++;
+			if (game.round==4){
+				$("#roll").attr('value', 'Reset');
+			}
+		}
+		else{
+			alert ('End of round 3! Resetting');
+			game.round = 1;
+			$("#roll").attr('value', 'Roll');
+
+			this.devDie.draw('developer-die', '?');
+			this.testerDie.draw('tester-die', '?');
+			this.designerDie.draw('designer-die', '?');
+		}
 	}
 
 	for(var i=0; i < state['stories'].length; i++) {
@@ -468,12 +485,14 @@ $(function() {
 	game = new Game(state);
 	game.draw();
 });
-  $(function() {
+
+$(function() {
     $( "#ready-column, #deploy-column, #design-doing-column, #design-done-column, #development-doing-column, #development-done-column, #test-column" ).sortable({
       connectWith: ".connectedSortable"
     }).disableSelection();
-  });
+});
 
+$("#roll").attr('value', 'Roll - Round(1)');
 
 
 </script>
@@ -492,9 +511,9 @@ $(function() {
 							<input type="radio" name="designer-choice" value="test" id="designer-test"/><label for="designer-test">test</label>
 						</td>
 						<td rowspan="3">
-							<input type="button" value="Next Round" onclick="game.nextRound()"/>
-							<input type="button" value="Next Day" onclick="game.advanceDay()"/>
-							<input type="button" value="Next from queue" onclick="game.newFromQueue()"/>
+							<input id='roll' type="button" value="Roll" onclick="game.nextRound()"/>
+							<input id='nextDay' type="button" value="Next Day" onclick="game.advanceDay()"/>
+							<input id='nextQueue' type="button" value="Next from queue" onclick="game.newFromQueue()"/>
 						</td>
 					</tr>
 					<tr>
